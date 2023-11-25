@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小游戏--别踩白块</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>别踩白块</h1>
+        <div id= "start">
+            <span>得分：</span><span id="score">0</span>
+            <button id="btn" title="开始">开始</button>
+        </div>
+    </div>
+    <div class="container">
+        <div id="main"></div>
+    </div> 
+    <script>
+        var clock = null;
+        var score = 0;
+        var speed = 4;
+     
+
+        //初始化游戏
+        document.getElementById("btn").onclick = function init(){
+            createrow();
+            score = 0;
+            //添加事件，onclick
+            document.getElementById("main").onclick = function(element){
+                judge(element);
+            }
+            clock = window.setInterval("move()",30);
+        }
+
+        //创建一个div
+        function creatediv(className){
+            var div = document.createElement("div");
+            div.className = className;
+            return div;
+        }
+        //创建一个数组，包含在div中，有三个cell和一个cell black
+        function createcell(){
+            var temp = ["cell","cell","cell","cell"];
+            var i = Math.floor(Math.random()*4);
+            temp[i] = "cell black";
+            return temp;
+        }
+        //创建一列div，含有4个节点
+        function createrow(){
+            var main = document.getElementById("main");
+            var row = creatediv("row");
+            var arr = createcell();
+
+            main.appendChild(row);
+
+            for(var i=0;i<5;i++){
+                row.appendChild(creatediv(arr[i]));
+            }
+            if(main.firstChild == null){
+                main.appendChild(row);
+            }else{
+                main.insertBefore(row,main.firstChild);
+            }
+        }
+
+
+        //删除一行，row最多5行即可
+        function delrow(){
+            var main = document.getElementById("main");
+            if(main.childNodes.length == 6){
+                main.removeChild(main.lastChild);
+            }
+        }
+
+        //让黑块移动起来
+        function move(){
+            var main = document.getElementById("main");
+            var top = parseInt(window.getComputedStyle(main,null)["top"]);
+            if(speed + top > 0){
+                top = 0;
+            }else{
+                top += speed;
+            }
+            main.style.top = top + "px";
+
+            if(top == 0){
+                createrow();
+                main.style.top = "-100px";
+                delrow();
+            }
+            //黑块触底则结束比赛
+            var rows = main.childNodes;
+            if((rows.length == 5) && (rows[rows.length-1].pass !== 1)){
+                fail();
+                for(var i=0;i<5;i++){
+                    main.removeChild(main.lastChild);
+                }
+            }
+        }
+
+        //判断是否点击了黑块，如点击了则让该行消失，如点击了白块则结束游戏
+        function judge(element){
+            if(element.target.className.indexOf("black") == -1){
+                fail()
+            }else{
+                element.target.className = "cell";
+                element.target.parentNode.pass = 1;
+                addScore();
+            }
+        }
+        //计算分数，调整速度
+        function addScore(){
+            score+=1; 
+            document.getElementById("score").innerHTML = score;
+            if(score % 10 == 0){
+                speed+=2;
+            }
+        }
+        //结束游戏
+        function fail(){
+            clearInterval(clock);
+            alert("游戏结束！"+"\n"+"您的最终的分为："+score);
+            document.getElementById("score").innerHTML = 0;
+            document.getElementById("main").innerHTML = "";
+            speed = 4;
+        }
+    </script>
+</body>
+</html>
